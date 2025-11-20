@@ -1,4 +1,13 @@
 <?php
+/**
+ * File: actions/input_nilai.php
+ * Deskripsi: File ini menangani proses input dan update nilai siswa oleh guru.
+ * Hanya user dengan role 'guru' yang diizinkan untuk mengakses fungsi-fungsi dalam file ini.
+ * File ini memungkinkan guru untuk menyimpan nilai siswa dalam database,
+ * baik dengan menimpa nilai yang sudah ada atau menambahkan nilai baru.
+ */
+
+// Mulai session dan include file konfigurasi database
 session_start();
 require_once '../config/database.php';
 
@@ -17,51 +26,51 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $guru_info = $koneksi->query("SELECT id FROM guru WHERE user_id = {$_SESSION['user_id']}")->fetch_assoc();
 $guru_id = $guru_info['id'];
 
-// Ambil data yang di-POST
+// Ambil data yang di-POST dari form input nilai
 $mapel_id = $_POST['mapel_id'];
 $semester = $_POST['semester'];
 $tahun_ajaran = $_POST['tahun_ajaran'];
 $kelas = $_POST['kelas'];
 
-// Ambil array nilai
+// Ambil array nilai dari form
 $siswa_ids = $_POST['siswa_id'];
 $nilai_angkas = $_POST['nilai_angka'];
 $predikats = $_POST['predikat'];
 
-// URL untuk redirect kembali
+// URL untuk redirect kembali ke halaman input nilai
 $redirect_url = "../views/guru/input_nilai.php?mapel_id=$mapel_id&kelas=$kelas&semester=$semester&tahun_ajaran=$tahun_ajaran";
 
-// Mulai Transaksi
+// Mulai transaksi untuk memastikan konsistensi data saat menyimpan nilai siswa
 $koneksi->begin_transaction();
 
 try {
-    // Siapkan statement untuk check, update, dan insert
+    // Siapkan statement untuk check (cek apakah nilai sudah ada), update, dan insert
     $stmt_check = $koneksi->prepare("SELECT id FROM nilai WHERE siswa_id = ? AND mapel_id = ? AND semester = ? AND tahun_ajaran = ?");
     $stmt_update = $koneksi->prepare("UPDATE nilai SET nilai_angka = ?, predikat = ? WHERE id = ?");
     $stmt_insert = $koneksi->prepare("INSERT INTO nilai (siswa_id, mapel_id, guru_id, semester, tahun_ajaran, nilai_angka, predikat) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
-    // Loop sebanyak data siswa yang dikirim
+    // Loop sebanyak data siswa yang dikirim dalam form
     for ($i = 0; $i < count($siswa_ids); $i++) {
         $siswa_id = $siswa_ids[$i];
         // Hanya proses jika ada nilai yang diinput
         $nilai_angka = !empty($nilai_angkas[$i]) ? $nilai_angkas[$i] : null;
         $predikat = !empty($predikats[$i]) ? $predikats[$i] : null;
 
-        // Cek apakah data nilai sudah ada
+        // Cek apakah data nilai sudah ada untuk pasangan siswa_id, mapel_id, semester, dan tahun_ajaran
         $stmt_check->bind_param("iiss", $siswa_id, $mapel_id, $semester, $tahun_ajaran);
         $stmt_check->execute();
         $result = $stmt_check->get_result();
         $existing_nilai = $result->fetch_assoc();
 
         if ($existing_nilai) {
-            // Jika sudah ada, UPDATE
+            // Jika sudah ada nilai sebelumnya, UPDATE dengan nilai baru
             // Hanya update jika ada nilai baru yang diinput
             if ($nilai_angka !== null) {
                 $stmt_update->bind_param("ssi", $nilai_angka, $predikat, $existing_nilai['id']);
                 $stmt_update->execute();
             }
         } else {
-            // Jika belum ada, INSERT
+            // Jika belum ada nilai sebelumnya, INSERT nilai baru
             // Hanya insert jika ada nilai yang diinput
             if ($nilai_angka !== null) {
                 $stmt_insert->bind_param("iiiisss", $siswa_id, $mapel_id, $guru_id, $semester, $tahun_ajaran, $nilai_angka, $predikat);
@@ -70,16 +79,16 @@ try {
         }
     }
 
-    // Commit transaksi
+    // Jika semua proses berhasil, commit transaksi
     $koneksi->commit();
     header("Location: " . $redirect_url . "&success=Nilai berhasil disimpan.");
 
 } catch (Exception $e) {
-    // Rollback jika terjadi error
+    // Jika terjadi error, rollback transaksi untuk mengembalikan ke kondisi sebelumnya
     $koneksi->rollback();
     header("Location: " . $redirect_url . "&error=Gagal menyimpan nilai: " . $e->getMessage());
 } finally {
-    // Tutup statement
+    // Tutup statement untuk membersihkan resource
     $stmt_check->close();
     $stmt_update->close();
     $stmt_insert->close();

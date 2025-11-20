@@ -193,7 +193,23 @@ $tahun_ajaran_list = $koneksi->query($query);
             font-size: 1.5rem;
             color: var(--ntt-accent);
             cursor: pointer;
-            padding: 0.25rem 0.5rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            transition: background-color 0.2s ease;
+            margin-right: 0.5rem;
+        }
+
+        .hamburger:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .hamburger i {
+            pointer-events: none; /* Prevent double click issues */
         }
 
         .mobile-only {
@@ -285,11 +301,7 @@ $tahun_ajaran_list = $koneksi->query($query);
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="preview_rapor.php">
-                    <i class="bi bi-file-earmark-text"></i> Lihat Rapor
-                </a>
-            </li>
+            
             <li class="nav-item">
                 <a class="nav-link" href="../../actions/logout.php">
                     <i class="bi bi-box-arrow-right"></i> Logout

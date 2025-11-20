@@ -1,6 +1,10 @@
 <?php
-// File: actions/auth.php
-// Deskripsi: Logika untuk proses otentikasi (login).
+/**
+ * File: actions/auth.php
+ * Deskripsi: Logika untuk proses otentikasi (login) pengguna.
+ * File ini menangani proses login dengan memverifikasi username dan password terhadap database,
+ * dan mengatur session pengguna berdasarkan peran mereka (admin, guru, siswa).
+ */
 
 // Mulai session PHP untuk menyimpan status login.
 session_start();
@@ -16,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Query untuk mencari user berdasarkan username.
     $sql = "SELECT id, username, password, role FROM users WHERE username = ?";
-    
+
     // Gunakan prepared statement untuk keamanan.
     if ($stmt = $koneksi->prepare($sql)) {
         $stmt->bind_param("s", $username);

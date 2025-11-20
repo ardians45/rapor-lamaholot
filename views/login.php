@@ -162,10 +162,34 @@
             border: 1px solid #f5c6cb;
         }
 
+        .input-group {
+            display: flex;
+            align-items: stretch;
+        }
+
         .input-group-text {
             background: #f8f9fa;
             border: 2px solid #e0e0e0;
             border-right: none;
+            border-radius: 1rem 0 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px; /* Fixed width for icon container */
+            text-align: center;
+        }
+
+        .input-group > .form-control {
+            border-left: none;
+            border-radius: 0 1rem 1rem 0;
+            flex: 1; /* Take remaining space */
+        }
+
+        .input-group .btn {
+            border-radius: 0 1rem 1rem 0;
+            border: 2px solid #e0e0e0;
+            border-left: none;
+            background: white;
         }
 
         /* Mobile-first responsive design */

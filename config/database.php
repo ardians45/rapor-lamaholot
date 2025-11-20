@@ -1,9 +1,13 @@
 <?php
-// File: config/database.php
-// Deskripsi: Konfigurasi dan koneksi ke database MySQL.
+/**
+ * File: config/database.php
+ * Deskripsi: File konfigurasi untuk koneksi ke database MySQL.
+ * File ini menyediakan koneksi database yang digunakan oleh seluruh aplikasi.
+ * Konfigurasi ini disesuaikan untuk lingkungan XAMPP secara default.
+ */
 
 // --- Pengaturan Database ---
-// Sesuaikan dengan konfigurasi XAMPP Anda jika berbeda.
+// Sesuaikan dengan konfigurasi server Anda jika berbeda.
 $db_host = 'localhost';       // Host database (biasanya 'localhost')
 $db_user = 'root';            // Username database
 $db_pass = '';                // Password database (kosongkan jika tidak ada)

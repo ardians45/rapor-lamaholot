@@ -1,4 +1,12 @@
 <?php
+/**
+ * File: actions/crud_guru.php
+ * Deskripsi: File ini menangani operasi CRUD (Create, Read, Update, Delete) untuk data guru.
+ * Hanya user dengan role 'admin' yang diizinkan untuk mengakses fungsi-fungsi dalam file ini.
+ * File ini memungkinkan admin untuk menambah dan menghapus data guru dari sistem.
+ */
+
+// Mulai session dan include file konfigurasi database
 session_start();
 require_once '../config/database.php';
 
@@ -37,19 +45,19 @@ if ($action == 'create' && $_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Hash password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    
-    // Mulai transaksi
+
+    // Mulai transaksi untuk memastikan konsistensi data antara tabel users dan guru
     $koneksi->begin_transaction();
 
     try {
-        // 1. Insert ke tabel 'users'
+        // 1. Insert ke tabel 'users' - membuat akun login untuk guru
         $stmt_user = $koneksi->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'guru')");
         $stmt_user->bind_param("ss", $username, $hashed_password);
         $stmt_user->execute();
-        $user_id = $koneksi->insert_id;
+        $user_id = $koneksi->insert_id; // Dapatkan ID user yang baru dibuat
         $stmt_user->close();
 
-        // 2. Insert ke tabel 'guru'
+        // 2. Insert ke tabel 'guru' - menyimpan informasi detail guru
         $stmt_guru = $koneksi->prepare("INSERT INTO guru (user_id, nip, nama) VALUES (?, ?, ?)");
         $stmt_guru->bind_param("iss", $user_id, $nip, $nama);
         $stmt_guru->execute();
@@ -60,7 +68,7 @@ if ($action == 'create' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: ../views/admin/manage_guru.php?success=Data guru berhasil ditambahkan.");
 
     } catch (Exception $e) {
-        // Jika ada error, rollback transaksi
+        // Jika ada error, rollback transaksi untuk mengembalikan ke kondisi sebelumnya
         $koneksi->rollback();
         header("Location: ../views/admin/manage_guru.php?error=Gagal menambahkan data: " . $e->getMessage());
     }
@@ -72,13 +80,13 @@ if ($action == 'create' && $_SERVER['REQUEST_METHOD'] == 'POST') {
 // ------------------------------------------------------------------
 if ($action == 'delete' && isset($_GET['id'])) {
     $id = intval($_GET['id']);
-    
-    // Cari user_id dari guru_id
+
+    // Cari user_id dari guru_id karena relasi antara tabel users dan guru
     $stmt_find = $koneksi->prepare("SELECT user_id FROM guru WHERE id = ?");
     $stmt_find->bind_param("i", $id);
     $stmt_find->execute();
     $result = $stmt_find->get_result();
-    
+
     if($result->num_rows > 0) {
         $user_id = $result->fetch_assoc()['user_id'];
         $stmt_find->close();
@@ -98,7 +106,7 @@ if ($action == 'delete' && isset($_GET['id'])) {
     exit;
 }
 
-// Jika tidak ada action yang cocok, redirect
+// Jika tidak ada action yang cocok, redirect ke dashboard admin
 header("Location: ../views/admin/dashboard.php");
 exit;
 ?>

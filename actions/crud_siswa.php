@@ -1,4 +1,12 @@
 <?php
+/**
+ * File: actions/crud_siswa.php
+ * Deskripsi: File ini menangani operasi CRUD (Create, Read, Update, Delete) untuk data siswa.
+ * Hanya user dengan role 'admin' yang diizinkan untuk mengakses fungsi-fungsi dalam file ini.
+ * File ini memungkinkan admin untuk menambah dan menghapus data siswa dari sistem.
+ */
+
+// Mulai session dan include file konfigurasi database
 session_start();
 require_once '../config/database.php';
 
@@ -39,19 +47,19 @@ if ($action == 'create' && $_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Hash password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    
-    // Mulai transaksi
+
+    // Mulai transaksi untuk memastikan konsistensi data antara tabel users dan siswa
     $koneksi->begin_transaction();
 
     try {
-        // 1. Insert ke tabel 'users'
+        // 1. Insert ke tabel 'users' - membuat akun login untuk siswa
         $stmt_user = $koneksi->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'siswa')");
         $stmt_user->bind_param("ss", $username, $hashed_password);
         $stmt_user->execute();
         $user_id = $koneksi->insert_id; // Dapatkan ID user yang baru dibuat
         $stmt_user->close();
 
-        // 2. Insert ke tabel 'siswa'
+        // 2. Insert ke tabel 'siswa' - menyimpan informasi detail siswa
         $stmt_siswa = $koneksi->prepare("INSERT INTO siswa (user_id, nis, nama, kelas, jurusan) VALUES (?, ?, ?, ?, ?)");
         $stmt_siswa->bind_param("issss", $user_id, $nis, $nama, $kelas, $jurusan);
         $stmt_siswa->execute();
@@ -62,7 +70,7 @@ if ($action == 'create' && $_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: ../views/admin/manage_siswa.php?success=Data siswa berhasil ditambahkan.");
 
     } catch (Exception $e) {
-        // Jika ada error, rollback transaksi
+        // Jika ada error, rollback transaksi untuk mengembalikan ke kondisi sebelumnya
         $koneksi->rollback();
         header("Location: ../views/admin/manage_siswa.php?error=Gagal menambahkan data: " . $e->getMessage());
     }
@@ -78,13 +86,13 @@ if ($action == 'delete' && isset($_GET['id'])) {
     // Untuk menghapus siswa, kita harus menghapus data di tabel 'users' juga.
     // Foreign key dengan ON DELETE CASCADE akan menangani ini secara otomatis.
     // Cukup hapus dari tabel 'users' dan data di 'siswa' akan ikut terhapus.
-    
-    // Cari user_id dari siswa_id
+
+    // Cari user_id dari siswa_id karena relasi antara tabel users dan siswa
     $stmt_find = $koneksi->prepare("SELECT user_id FROM siswa WHERE id = ?");
     $stmt_find->bind_param("i", $id);
     $stmt_find->execute();
     $result = $stmt_find->get_result();
-    
+
     if($result->num_rows > 0) {
         $user_id = $result->fetch_assoc()['user_id'];
         $stmt_find->close();
@@ -104,7 +112,7 @@ if ($action == 'delete' && isset($_GET['id'])) {
     exit;
 }
 
-// Jika tidak ada action yang cocok, redirect
+// Jika tidak ada action yang cocok, redirect ke dashboard admin
 header("Location: ../views/admin/dashboard.php");
 exit;
 ?>

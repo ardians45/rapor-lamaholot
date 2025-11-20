@@ -1,20 +1,29 @@
 <?php
-// Script aman untuk mereset password admin ke 'admin123'
-// Hanya bisa diakses dari localhost untuk alasan keamanan
+/**
+ * File: reset_admin_password.php
+ * Deskripsi: Script aman untuk mereset password admin ke default ('admin123')
+ * File ini hanya bisa diakses dari localhost untuk alasan keamanan.
+ * Sangat penting untuk menghapus file ini setelah digunakan di lingkungan produksi.
+ */
 
+// Validasi bahwa hanya localhost yang bisa mengakses file ini
 if ($_SERVER['REMOTE_ADDR'] !== '127.0.0.1' && $_SERVER['REMOTE_ADDR'] !== '::1') {
     die('Akses ditolak: Hanya bisa diakses dari localhost.');
 }
 
+// Jika form disubmit (method POST dengan parameter confirm_reset)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_reset'])) {
     require_once 'config/database.php';
-    
+
+    // Set password baru dan hash
     $new_password = 'admin123';
     $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-    
+
+    // Persiapkan statement untuk mengupdate password admin
     $stmt = $koneksi->prepare("UPDATE users SET password = ? WHERE username = 'admin'");
     $stmt->bind_param("s", $hashed_password);
-    
+
+    // Eksekusi statement dan cek hasil
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {
             $message = "<p style='color: green;'><strong>BERHASIL:</strong> Password admin telah direset ke '<strong>admin123</strong>'</p>";
@@ -24,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_reset'])) {
     } else {
         $message = "<p style='color: red;'><strong>GAGAL:</strong> " . $stmt->error . "</p>";
     }
-    
+
     $stmt->close();
     $koneksi->close();
 } else {
@@ -50,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_reset'])) {
 <body>
     <div class="container">
         <h2>Reset Password Admin</h2>
-        
+
         <?php if ($message): ?>
             <?php echo $message; ?>
             <p><a href="views/login.php">Klik di sini untuk login</a></p>
@@ -60,11 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_reset'])) {
                 <p><strong>Username:</strong> admin</p>
                 <p><strong>Password baru:</strong> admin123</p>
             </div>
-            
+
             <div class="warning">
                 <p><strong>PERINGATAN:</strong> Ini akan mengganti password admin saat ini. Pastikan Anda yakin ingin melanjutkan.</p>
             </div>
-            
+
             <form method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mereset password admin menjadi admin123?')">
                 <input type="hidden" name="confirm_reset" value="1">
                 <button type="submit" class="btn">Reset Password Admin</button>

@@ -172,7 +172,23 @@ $total_siswa = $koneksi->query("SELECT COUNT(*) AS total FROM siswa")->fetch_ass
             font-size: 1.5rem;
             color: var(--text-dark);
             cursor: pointer;
-            padding: 0.25rem 0.5rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            transition: background-color 0.2s ease;
+            margin-right: 0.5rem;
+        }
+
+        .hamburger:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .hamburger i {
+            pointer-events: none; /* Prevent double click issues */
         }
 
         .welcome-text {

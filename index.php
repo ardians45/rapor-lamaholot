@@ -1,6 +1,11 @@
 <?php
-// File: index.php
-// Deskripsi: Halaman utama yang berfungsi sebagai router.
+/**
+ * File: index.php
+ * Deskripsi: Halaman utama yang berfungsi sebagai router untuk mengarahkan pengguna
+ * ke halaman yang sesuai berdasarkan status login dan peran (role) mereka.
+ * File ini memeriksa apakah pengguna sudah login, dan jika sudah,
+ * akan mengarahkan mereka ke dashboard sesuai dengan peran mereka (admin, guru, siswa).
+ */
 
 // Mulai session untuk mengakses data session.
 session_start();

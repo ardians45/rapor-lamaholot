@@ -1,30 +1,40 @@
 <?php
+/**
+ * File: cetak_rapor.php
+ * Deskripsi: Fungsi ini digunakan oleh siswa untuk mencetak rapor mereka sendiri dalam format PDF.
+ * File ini memerlukan session login sebagai siswa dan menggunakan library FPDF untuk membuat dokumen PDF.
+ * Hanya siswa yang dapat mengakses dan mencetak rapor milik mereka sendiri.
+ */
+
+// Mulai session untuk memeriksa akses pengguna
 session_start();
+
+// Include file konfigurasi database dan library FPDF
 require_once 'config/database.php';
 require_once 'library/fpdf.php';
 
 // ------------------------------------------------------------------
-// Validasi Akses
+// Validasi Akses - Memastikan hanya siswa yang dapat mengakses
 // ------------------------------------------------------------------
 if (!isset($_SESSION['logged_in']) || $_SESSION['role'] != 'siswa') {
     die("Akses ditolak. Silakan login sebagai siswa.");
 }
 
 // ------------------------------------------------------------------
-// Ambil Data
+// Ambil Data - Mengambil parameter dari URL dan data dari database
 // ------------------------------------------------------------------
 $user_id = $_SESSION['user_id'];
 $semester = $_GET['semester'] ?? die('Semester tidak ditemukan.');
 $tahun_ajaran = $_GET['tahun_ajaran'] ?? die('Tahun ajaran tidak ditemukan.');
 
-// Ambil data siswa
+// Ambil data siswa yang sedang login
 $siswa_info_stmt = $koneksi->prepare("SELECT * FROM siswa WHERE user_id = ?");
 $siswa_info_stmt->bind_param("i", $user_id);
 $siswa_info_stmt->execute();
 $siswa_info = $siswa_info_stmt->get_result()->fetch_assoc();
 if (!$siswa_info) die('Data siswa tidak ditemukan.');
 
-// Ambil data nilai
+// Ambil data nilai siswa untuk semester dan tahun ajaran yang dipilih
 $nilai_stmt = $koneksi->prepare(
     "SELECT m.nama_mapel, m.kkm, n.nilai_angka, n.predikat
      FROM nilai n
@@ -38,10 +48,11 @@ $nilai_result = $nilai_stmt->get_result();
 
 // ------------------------------------------------------------------
 // Class PDF Kustom (untuk Header & Footer)
+// Kelas ini memperluas fungsi FPDF untuk menyesuaikan header dan footer dokumen PDF
 // ------------------------------------------------------------------
 class PDF extends FPDF
 {
-    // Header Halaman
+    // Header Halaman - Menampilkan informasi sekolah di setiap halaman
     function Header()
     {
         // Logo (jika ada, contoh: 'assets/logo.png')
@@ -61,7 +72,7 @@ class PDF extends FPDF
         $this->Ln(7); // Increased spacing after line
     }
 
-    // Footer Halaman
+    // Footer Halaman - Menampilkan nomor halaman di setiap halaman
     function Footer()
     {
         $this->SetY(-15); // Posisi 1.5 cm dari bawah
@@ -74,13 +85,13 @@ class PDF extends FPDF
 // Mulai Membuat PDF
 // ------------------------------------------------------------------
 $pdf = new PDF();
-$pdf->AliasNbPages();
-$pdf->AddPage();
+$pdf->AliasNbPages(); // Aktifkan penomoran halaman otomatis
+$pdf->AddPage(); // Tambah halaman baru
 $pdf->SetFont('Helvetica','B',14);
 $pdf->Cell(0,10,'LAPORAN HASIL BELAJAR (RAPOR)',0,1,'C');
 $pdf->Ln(5);
 
-// Informasi Siswa
+// Informasi Siswa - Menampilkan detail identitas siswa di awal dokumen
 $pdf->SetFont('Helvetica','B',10);
 $pdf->Cell(30, 6, 'Nama Siswa', 0, 0);
 $pdf->Cell(5, 6, ':', 0, 0);
@@ -113,7 +124,7 @@ $pdf->Cell(80, 6, $tahun_ajaran, 0, 1);
 
 $pdf->Ln(10); // Spasi sebelum tabel
 
-// Tabel Nilai
+// Tabel Nilai - Menampilkan nilai mata pelajaran dalam bentuk tabel
 $pdf->SetFont('Helvetica','B',10);
 $pdf->SetFillColor(230,230,230); // Warna abu-abu untuk header tabel
 $pdf->Cell(10, 8, 'No', 1, 0, 'C', true);
@@ -137,7 +148,7 @@ if ($nilai_result->num_rows > 0) {
 }
 $pdf->Ln(15);
 
-// Tanda Tangan
+// Tanda Tangan - Menampilkan area untuk tanda tangan orang tua dan wali kelas
 $pdf->SetFont('Arial','',10);
 $pdf->Cell(120); // Pindah ke kanan
 $pdf->Cell(0, 5, 'Jakarta Barat, ' . date('d F Y'), 0, 1, 'L');
@@ -157,7 +168,6 @@ $guru_wali_nama = "Budi Santoso, S.Pd."; // Contoh, bisa diambil dari database
 $pdf->Cell(0, 5, $guru_wali_nama, 0, 1, 'L');
 $pdf->Cell(10);
 $pdf->Cell(0, 5, 'NIP: 199001012020121001', 0, 1, 'L');
-
 
 // ------------------------------------------------------------------
 // Output PDF

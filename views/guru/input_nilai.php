@@ -180,7 +180,7 @@ if ($selected_mapel_id && $selected_kelas && $selected_semester && $selected_tah
 
         .input-group {
             display: flex;
-            align-items: center;
+            align-items: stretch;
         }
 
         .input-group-text {
@@ -188,12 +188,19 @@ if ($selected_mapel_id && $selected_kelas && $selected_semester && $selected_tah
             border: 2px solid #e0e0e0;
             border-right: none;
             border-radius: 0.75rem 0 0 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px; /* Fixed width for icon container */
+            text-align: center;
         }
 
         .input-group .form-control {
             border-left: none;
             border-radius: 0 0.75rem 0.75rem 0;
+            flex: 1; /* Take remaining space */
         }
+
 
         .mobile-card {
             display: none;
