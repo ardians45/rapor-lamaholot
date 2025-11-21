@@ -15,385 +15,216 @@ $total_siswa = $koneksi->query("SELECT COUNT(*) AS total FROM siswa")->fetch_ass
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - SD Lamaholot</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e', // Rose 500
+                            600: '#e11d48', // Rose 600
+                            700: '#be123c', // Rose 700
+                            900: '#881337',
+                        },
+                        secondary: '#f59e0b', // Amber
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --ntt-primary: #e74c3c;
-            --ntt-secondary: #f39c12;
-            --ntt-accent: #2c3e50;
-            --card-bg: #ffffff;
-            --sidebar-bg: var(--ntt-accent);
-            --text-light: #ffffff;
-            --text-dark: #333333;
-            --shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            --shadow-lg: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            overflow-x: hidden;
-        }
-
-        .sidebar {
-            background: var(--sidebar-bg);
-            color: var(--text-light);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            z-index: 1000;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-            padding-top: 3.5rem;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.85);
-            padding: 0.75rem 1.5rem;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-        }
-
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border-left: 3px solid var(--ntt-secondary);
-        }
-
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            width: 24px;
-            text-align: center;
-        }
-
-        .main-content {
-            margin-left: 0;
-            padding: 1rem;
-            transition: margin-left 0.3s ease;
-        }
-
-        .main-content.expanded {
-            margin-left: 280px;
-        }
-
-        .top-nav {
-            background: white;
-            box-shadow: var(--shadow);
-            padding: 0.75rem 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .dashboard-header {
-            margin-bottom: 1.5rem;
-            padding: 1rem 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .welcome-card {
-            background: linear-gradient(135deg, var(--ntt-primary) 0%, var(--ntt-secondary) 100%);
-            color: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .stat-card {
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            margin-bottom: 1rem;
-            border: none;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .stat-card .card-body {
-            padding: 1.5rem;
-        }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .action-card {
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            margin-bottom: 1rem;
-            border: none;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .action-card .card-body {
-            padding: 1.5rem;
-        }
-
-        .action-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .hamburger {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-dark);
-            cursor: pointer;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            transition: background-color 0.2s ease;
-            margin-right: 0.5rem;
-        }
-
-        .hamburger:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        .hamburger i {
-            pointer-events: none; /* Prevent double click issues */
-        }
-
-        .welcome-text {
-            font-size: 1.25rem;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .mobile-only {
-            display: block;
-        }
-
-        .desktop-only {
-            display: none;
-        }
-
-        @media (min-width: 768px) {
-            .sidebar {
-                left: 0;
-            }
-
-            .main-content {
-                margin-left: 280px;
-            }
-
-            .mobile-only {
-                display: none;
-            }
-
-            .desktop-only {
-                display: block;
-            }
-        }
-
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body>
-    <!-- Mobile Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="p-3">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="text-white mb-0">SD Lamaholot</h5>
-                <button class="btn text-white d-md-none" id="close-sidebar">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-        </div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" href="dashboard.php">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="manage_guru.php">
-                    <i class="bi bi-person-video3"></i> Kelola Guru
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="manage_siswa.php">
-                    <i class="bi bi-people-fill"></i> Kelola Siswa
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="../../actions/logout.php">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-            </li>
-        </ul>
-    </div>
+<body class="bg-slate-50 text-slate-800">
 
-    <div class="main-content" id="main-content">
-        <!-- Top Navigation for Mobile -->
-        <nav class="top-nav d-flex d-md-none">
-            <button class="hamburger" id="hamburger">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="ms-auto">
-                <a href="../../actions/logout.php" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-box-arrow-right"></i>
-                </a>
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity opacity-0 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+        <!-- Logo -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-100">
+            <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-md shadow-primary-500/30 mr-3">
+                <i class="ph ph-book-bookmark text-white text-lg"></i>
             </div>
+            <span class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">SD Lamaholot</span>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
+            
+            <a href="dashboard.php" class="flex items-center px-3 py-2.5 bg-primary-50 text-primary-700 rounded-xl group transition-colors">
+                <i class="ph-fill ph-squares-four text-xl mr-3"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            
+            <a href="manage_guru.php" class="flex items-center px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl group transition-colors">
+                <i class="ph ph-chalkboard-teacher text-xl mr-3 text-slate-400 group-hover:text-primary-600 transition-colors"></i>
+                <span class="font-medium">Kelola Guru</span>
+            </a>
+            
+            <a href="manage_siswa.php" class="flex items-center px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl group transition-colors">
+                <i class="ph ph-student text-xl mr-3 text-slate-400 group-hover:text-primary-600 transition-colors"></i>
+                <span class="font-medium">Kelola Siswa</span>
+            </a>
         </nav>
 
-        <div class="container-fluid">
-            <div class="dashboard-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2 class="mb-1">Dashboard Admin</h2>
-                        <p class="text-muted mb-0">Manajemen Sistem Rapor Online</p>
-                    </div>
-                    <div class="d-none d-md-block">
-                        <span class="badge bg-primary">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></span>
-                    </div>
+        <!-- User Profile Bottom -->
+        <div class="p-4 border-t border-slate-100">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold">
+                    <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-900 truncate"><?php echo htmlspecialchars($_SESSION['username']); ?></p>
+                    <p class="text-xs text-slate-500 truncate">Administrator</p>
                 </div>
             </div>
-
-            <div class="welcome-card">
-                <h3 class="mb-3"><i class="bi bi-emoji-smile"></i> Selamat Datang!</h3>
-                <p class="welcome-text mb-0">Halo, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>! Anda sedang masuk sebagai administrator sistem rapor online SD Lamaholot.</p>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card bg-primary text-white stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-icon"><i class="bi bi-person-video3"></i></div>
-                                    <p class="mb-1">Jumlah Guru</p>
-                                    <div class="stat-number"><?php echo $total_guru; ?></div>
-                                </div>
-                                <div class="display-4 opacity-25"><i class="bi bi-person-video3"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card bg-success text-white stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
-                                    <p class="mb-1">Jumlah Siswa</p>
-                                    <div class="stat-number"><?php echo $total_siswa; ?></div>
-                                </div>
-                                <div class="display-4 opacity-25"><i class="bi bi-people-fill"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <h3 class="mb-3"><i class="bi bi-tools"></i> Manajemen Data Master</h3>
-                <div class="action-grid">
-                    <a href="manage_guru.php" class="action-card card text-decoration-none">
-                        <div class="card-body">
-                            <div class="action-icon text-primary">
-                                <i class="bi bi-person-video3"></i>
-                            </div>
-                            <h5 class="card-title">Kelola Data Guru</h5>
-                            <p class="card-text text-muted">Tambah, edit, dan hapus data guru</p>
-                        </div>
-                    </a>
-                    <a href="manage_siswa.php" class="action-card card text-decoration-none">
-                        <div class="card-body">
-                            <div class="action-icon text-success">
-                                <i class="bi bi-people-fill"></i>
-                            </div>
-                            <h5 class="card-title">Kelola Data Siswa</h5>
-                            <p class="card-text text-muted">Tambah, edit, dan hapus data siswa</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
+            <a href="../../actions/logout.php" class="flex items-center justify-center w-full py-2 px-4 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                <i class="ph ph-sign-out mr-2"></i> Logout
+            </a>
         </div>
-    </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:ml-64 min-h-screen flex flex-col">
+        <!-- Top Header -->
+        <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-4 lg:px-8 flex items-center justify-between">
+            <div class="flex items-center">
+                <button id="menuBtn" class="p-2 -ml-2 mr-2 text-slate-500 hover:bg-slate-100 rounded-lg lg:hidden">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+                <h1 class="text-xl font-bold text-slate-800 hidden sm:block">Overview</h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                    <i class="ph-fill ph-calendar-blank mr-2 text-slate-400"></i>
+                    <?php echo date('d F Y'); ?>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+            
+            <!-- Welcome Banner -->
+            <div class="relative overflow-hidden bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl p-8 text-white shadow-xl shadow-primary-900/10">
+                <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
+                
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-bold mb-2">Selamat Datang, Admin! 👋</h2>
+                    <p class="text-primary-100 max-w-xl">Kelola data guru, siswa, dan sistem rapor online SD Lamaholot dengan mudah dan cepat melalui dashboard ini.</p>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card Guru -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                        <i class="ph-fill ph-chalkboard-teacher text-9xl text-primary-600"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                            <i class="ph-fill ph-chalkboard-teacher text-2xl"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium mb-1">Total Guru</p>
+                        <h3 class="text-4xl font-bold text-slate-800"><?php echo $total_guru; ?></h3>
+                        <div class="mt-4 flex items-center text-sm text-blue-600 font-medium cursor-pointer hover:underline">
+                            <a href="manage_guru.php">Lihat Detail <i class="ph-bold ph-arrow-right inline-block ml-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Siswa -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                        <i class="ph-fill ph-student text-9xl text-emerald-600"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                            <i class="ph-fill ph-student text-2xl"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium mb-1">Total Siswa</p>
+                        <h3 class="text-4xl font-bold text-slate-800"><?php echo $total_siswa; ?></h3>
+                        <div class="mt-4 flex items-center text-sm text-emerald-600 font-medium cursor-pointer hover:underline">
+                            <a href="manage_siswa.php">Lihat Detail <i class="ph-bold ph-arrow-right inline-block ml-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div>
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                    <i class="ph-fill ph-lightning text-yellow-500 mr-2"></i> Akses Cepat
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a href="add_guru.php" class="flex items-center p-4 bg-white border border-slate-200 rounded-xl hover:border-primary-500 hover:shadow-lg hover:shadow-primary-500/10 transition-all group">
+                        <div class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center mr-4 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                            <i class="ph-bold ph-plus"></i>
+                        </div>
+                        <span class="font-medium text-slate-700 group-hover:text-primary-700">Tambah Guru Baru</span>
+                    </a>
+                    <a href="add_siswa.php" class="flex items-center p-4 bg-white border border-slate-200 rounded-xl hover:border-primary-500 hover:shadow-lg hover:shadow-primary-500/10 transition-all group">
+                        <div class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center mr-4 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                            <i class="ph-bold ph-plus"></i>
+                        </div>
+                        <span class="font-medium text-slate-700 group-hover:text-primary-700">Tambah Siswa Baru</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
 
     <script>
-        // Mobile sidebar functionality
-        document.getElementById('hamburger').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
+        // Mobile Sidebar Toggle
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        let isSidebarOpen = false;
 
-        document.getElementById('close-sidebar').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.body.style.overflow = '';
-        });
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const hamburger = document.getElementById('hamburger');
-
-            if (window.innerWidth < 768 &&
-                sidebar.classList.contains('active') &&
-                !sidebar.contains(event.target) &&
-                event.target !== hamburger) {
-                sidebar.classList.remove('active');
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            if (isSidebarOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden', 'opacity-0');
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
                 document.body.style.overflow = '';
             }
-        });
+        }
 
-        // Add hover effect to stat cards
-        const statCards = document.querySelectorAll('.stat-card');
-        statCards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
-            });
-
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
+        menuBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
     </script>
 </body>
 </html>

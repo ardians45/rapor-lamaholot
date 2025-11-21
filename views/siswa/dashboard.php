@@ -12,7 +12,7 @@ $user_id = $_SESSION['user_id'];
 $siswa_info = $koneksi->query("SELECT * FROM siswa WHERE user_id = $user_id")->fetch_assoc();
 $current_year = date('Y').'/'.(date('Y')+1);
 
-// Ambil daftar tahun ajaran yang ada nilainya untuk siswa ini, dan gabungkan dengan tahun ajaran saat ini
+// Ambil daftar tahun ajaran yang ada nilainya untuk siswa ini
 $query = "(SELECT DISTINCT tahun_ajaran FROM nilai WHERE siswa_id = {$siswa_info['id']})
           UNION
           (SELECT '{$current_year}')
@@ -23,451 +23,286 @@ $tahun_ajaran_list = $koneksi->query($query);
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Siswa - SD Lamaholot</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' } // Blue
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --ntt-primary: #e74c3c;
-            --ntt-secondary: #f39c12;
-            --ntt-accent: #3498db;
-            --card-bg: #ffffff;
-            --shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            --shadow-lg: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            padding-bottom: 1rem;
-        }
-
-        .sidebar {
-            background: var(--ntt-accent);
-            color: white;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            z-index: 1000;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-            padding-top: 3.5rem;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.85);
-            padding: 0.75rem 1.5rem;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-        }
-
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border-left: 3px solid var(--ntt-secondary);
-        }
-
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            width: 24px;
-            text-align: center;
-        }
-
-        .main-content {
-            margin-left: 0;
-            padding: 1rem;
-            transition: margin-left 0.3s ease;
-        }
-
-        .main-content.expanded {
-            margin-left: 280px;
-        }
-
-        .top-nav {
-            background: white;
-            box-shadow: var(--shadow);
-            padding: 0.75rem 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .dashboard-header {
-            margin-bottom: 1.5rem;
-            padding: 1rem 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .welcome-card {
-            background: linear-gradient(135deg, var(--ntt-accent) 0%, var(--ntt-secondary) 100%);
-            color: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .tab-card {
-            border-radius: 1rem;
-            border: none;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .nav-tabs {
-            border: none;
-            padding: 0.5rem;
-            background: white;
-            border-radius: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .nav-tabs .nav-link {
-            border: none;
-            border-radius: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            margin: 0.25rem;
-            transition: all 0.3s ease;
-        }
-
-        .nav-tabs .nav-link.active {
-            background: var(--ntt-accent);
-            color: white;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--ntt-accent);
-            margin-bottom: 0.5rem;
-        }
-
-        .form-control, .form-select {
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--ntt-accent);
-            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
-        }
-
-        .btn {
-            border-radius: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--ntt-accent);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        .hamburger {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--ntt-accent);
-            cursor: pointer;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            transition: background-color 0.2s ease;
-            margin-right: 0.5rem;
-        }
-
-        .hamburger:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        .hamburger i {
-            pointer-events: none; /* Prevent double click issues */
-        }
-
-        .mobile-only {
-            display: block;
-        }
-
-        .desktop-only {
-            display: none;
-        }
-
-        @media (min-width: 768px) {
-            .sidebar {
-                left: 0;
-            }
-
-            .main-content {
-                margin-left: 280px;
-            }
-
-            .mobile-only {
-                display: none;
-            }
-
-            .desktop-only {
-                display: block;
-            }
-        }
-
-        .profile-card {
-            border-radius: 1rem;
-            border: none;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .profile-item {
-            padding: 1rem;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .profile-item:last-child {
-            border-bottom: none;
-        }
-
-        .profile-label {
-            font-weight: 600;
-            color: var(--ntt-accent);
-        }
-
-        .profile-value {
-            font-weight: 500;
-        }
-
-        .siswa-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .siswa-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--ntt-primary) 0%, var(--ntt-secondary) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
-<body>
-    <!-- Mobile Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="p-3">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="text-white mb-0">SD Lamaholot</h5>
-                <button class="btn text-white d-md-none" id="close-sidebar">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-        </div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" href="dashboard.php">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-            </li>
-            
-            <li class="nav-item">
-                <a class="nav-link" href="../../actions/logout.php">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-            </li>
-        </ul>
-    </div>
+<body class="bg-slate-50 text-slate-800">
 
-    <div class="main-content" id="main-content">
-        <!-- Top Navigation for Mobile -->
-        <nav class="top-nav d-flex d-md-none">
-            <button class="hamburger" id="hamburger">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="ms-auto">
-                <a href="../../actions/logout.php" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-box-arrow-right"></i>
-                </a>
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity opacity-0 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+        <div class="h-16 flex items-center px-6 border-b border-slate-100">
+            <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-md shadow-primary-500/30 mr-3">
+                <i class="ph ph-book-bookmark text-white text-lg"></i>
             </div>
+            <span class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">SD Lamaholot</span>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Siswa</p>
+            
+            <a href="dashboard.php" class="flex items-center px-3 py-2.5 bg-primary-50 text-primary-700 rounded-xl group transition-colors">
+                <i class="ph-fill ph-squares-four text-xl mr-3"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            
+            <a href="../../actions/logout.php" class="flex items-center px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl group transition-colors mt-auto">
+                <i class="ph ph-sign-out text-xl mr-3 text-slate-400 group-hover:text-primary-600 transition-colors"></i>
+                <span class="font-medium">Logout</span>
+            </a>
         </nav>
 
-        <div class="container-fluid">
-            <div class="dashboard-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2 class="mb-1">Dashboard Siswa</h2>
-                        <p class="text-muted mb-0">Sistem Manajemen Rapor Online</p>
+        <div class="p-4 border-t border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold">
+                    <?php echo strtoupper(substr($siswa_info['nama'], 0, 2)); ?>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-900 truncate"><?php echo htmlspecialchars(explode(' ', $siswa_info['nama'])[0]); ?></p>
+                    <p class="text-xs text-slate-500 truncate">Siswa</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:ml-64 min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-4 lg:px-8 flex items-center justify-between">
+            <div class="flex items-center">
+                <button id="menuBtn" class="p-2 -ml-2 mr-2 text-slate-500 hover:bg-slate-100 rounded-lg lg:hidden">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+                <h1 class="text-xl font-bold text-slate-800 hidden sm:block">Dashboard Siswa</h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                    <i class="ph-fill ph-calendar-blank mr-2 text-slate-400"></i>
+                    <?php echo date('d F Y'); ?>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+            
+            <!-- Welcome Banner -->
+            <div class="relative overflow-hidden bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl p-8 text-white shadow-xl shadow-primary-900/10">
+                <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                    <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl font-bold border-2 border-white/30">
+                        <?php echo strtoupper(substr($siswa_info['nama'], 0, 1)); ?>
                     </div>
-                    <div class="d-none d-md-block">
-                        <span class="badge bg-info">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></span>
+                    <div class="text-center md:text-left">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2">Halo, <?php echo htmlspecialchars($siswa_info['nama']); ?>! 👋</h2>
+                        <p class="text-primary-100">Selamat datang di dashboard siswa. Lihat hasil belajarmu di sini.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="siswa-info">
-                <div class="siswa-avatar">
-                    <?php echo strtoupper(substr($siswa_info['nama'], 0, 1)); ?>
-                </div>
-                <div>
-                    <h3 class="mb-0"><?php echo htmlspecialchars(explode(' ', $siswa_info['nama'])[0]); ?></h3>
-                    <p class="text-muted mb-0">Kelas: <?php echo htmlspecialchars($siswa_info['kelas']); ?></p>
-                </div>
-            </div>
-
-            <div class="welcome-card">
-                <h3 class="mb-3"><i class="bi bi-emoji-smile"></i> Selamat Datang!</h3>
-                <p class="mb-0">Halo, <strong><?php echo htmlspecialchars(explode(' ', $siswa_info['nama'])[0]); ?></strong>! Ini adalah halaman dashboard pribadi Anda. Anda dapat melihat profil dan rapor Anda di sini.</p>
-            </div>
-
-            <div class="card tab-card">
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="rapor-tab" data-bs-toggle="tab" data-bs-target="#rapor" type="button" role="tab" aria-controls="rapor" aria-selected="true">
-                            <i class="bi bi-file-earmark-text me-2"></i> Lihat Rapor
+            <!-- Main Tabs & Content -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Left Column: Report Form (2/3 width on large) -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- Tab Navigation (Visual Only as sections are stacked or toggled) -->
+                    <div class="bg-slate-200 p-1 rounded-xl inline-flex">
+                        <button onclick="switchTab('rapor')" id="tab-rapor" class="px-6 py-2 rounded-lg text-sm font-medium bg-white text-slate-900 shadow-sm transition-all">
+                            <i class="ph-fill ph-file-text mr-2"></i> Lihat Rapor
                         </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="profil-tab" data-bs-toggle="tab" data-bs-target="#profil" type="button" role="tab" aria-controls="profil" aria-selected="false">
-                            <i class="bi bi-person me-2"></i> Profil Anda
+                        <button onclick="switchTab('profil')" id="tab-profil" class="px-6 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 transition-all">
+                            <i class="ph-fill ph-user mr-2"></i> Profil Saya
                         </button>
-                    </li>
-                </ul>
-                <div class="tab-content p-4" id="myTabContent">
-                    <div class="tab-pane fade show active" id="rapor" role="tabpanel" aria-labelledby="rapor-tab">
-                        <h4 class="mb-3"><i class="bi bi-file-earmark-text me-2"></i> Lihat & Cetak Rapor</h4>
-                        <p class="text-muted mb-4">Silakan pilih tahun ajaran dan semester untuk melihat rapor Anda.</p>
-                        <form action="preview_rapor.php" method="GET" class="row g-3">
-                            <div class="col-12 col-md-5">
-                                <label for="tahun_ajaran" class="form-label">Pilih Tahun Ajaran</label>
-                                <select name="tahun_ajaran" id="tahun_ajaran" class="form-select" required>
-                                    <option value="">-- Pilih Tahun --</option>
-                                    <?php while($th = $tahun_ajaran_list->fetch_assoc()): ?>
-                                        <option value="<?php echo htmlspecialchars($th['tahun_ajaran']); ?>"><?php echo htmlspecialchars($th['tahun_ajaran']); ?></option>
-                                    <?php endwhile; ?>
-                                </select>
+                    </div>
+
+                    <!-- Content: Rapor -->
+                    <div id="content-rapor" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 animate-fade-in">
+                        <div class="flex items-center mb-6">
+                            <div class="w-10 h-10 bg-primary-50 text-primary-600 rounded-lg flex items-center justify-center mr-4">
+                                <i class="ph-fill ph-file-text text-xl"></i>
                             </div>
-                            <div class="col-12 col-md-5">
-                                <label for="semester" class="form-label">Pilih Semester</label>
-                                <select name="semester" id="semester" class="form-select" required>
-                                    <option value="1">Ganjil</option>
-                                    <option value="2">Genap</option>
-                                </select>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">Cetak Rapor & Nilai</h3>
+                                <p class="text-sm text-slate-500">Pilih periode akademik untuk melihat hasil studi.</p>
                             </div>
-                            <div class="col-12 col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="bi bi-eye"></i> Lihat
+                        </div>
+
+                        <form action="preview_rapor.php" method="GET" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label for="tahun_ajaran" class="text-sm font-semibold text-slate-700">Tahun Ajaran</label>
+                                    <div class="relative">
+                                        <select name="tahun_ajaran" id="tahun_ajaran" required class="block w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 appearance-none">
+                                            <option value="">-- Pilih Tahun --</option>
+                                            <?php while($th = $tahun_ajaran_list->fetch_assoc()): ?>
+                                                <option value="<?php echo htmlspecialchars($th['tahun_ajaran']); ?>"><?php echo htmlspecialchars($th['tahun_ajaran']); ?></option>
+                                            <?php endwhile; ?>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                            <i class="ph-bold ph-caret-down"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label for="semester" class="text-sm font-semibold text-slate-700">Semester</label>
+                                    <div class="relative">
+                                        <select name="semester" id="semester" required class="block w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 appearance-none">
+                                            <option value="1">Ganjil</option>
+                                            <option value="2">Genap</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                            <i class="ph-bold ph-caret-down"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-4">
+                                <button type="submit" class="w-full md:w-auto px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center">
+                                    <i class="ph-bold ph-eye mr-2"></i>
+                                    Lihat Rapor
                                 </button>
                             </div>
                         </form>
                     </div>
-                    <div class="tab-pane fade" id="profil" role="tabpanel" aria-labelledby="profil-tab">
-                        <h4 class="mb-3"><i class="bi bi-person me-2"></i> Profil Siswa</h4>
-                        <div class="card profile-card">
-                            <div class="profile-item">
-                                <div class="row">
-                                    <div class="col-4">
-                                        <span class="profile-label">NIS:</span>
-                                    </div>
-                                    <div class="col-8">
-                                        <span class="profile-value"><?php echo htmlspecialchars($siswa_info['nis']); ?></span>
-                                    </div>
-                                </div>
+
+                    <!-- Content: Profil (Hidden by default) -->
+                    <div id="content-profil" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 animate-fade-in">
+                        <div class="flex items-center mb-6">
+                            <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mr-4">
+                                <i class="ph-fill ph-user-circle text-xl"></i>
                             </div>
-                            <div class="profile-item">
-                                <div class="row">
-                                    <div class="col-4">
-                                        <span class="profile-label">Nama Lengkap:</span>
-                                    </div>
-                                    <div class="col-8">
-                                        <span class="profile-value"><?php echo htmlspecialchars($siswa_info['nama']); ?></span>
-                                    </div>
-                                </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">Data Pribadi</h3>
+                                <p class="text-sm text-slate-500">Informasi data diri siswa terdaftar.</p>
                             </div>
-                            <div class="profile-item">
-                                <div class="row">
-                                    <div class="col-4">
-                                        <span class="profile-label">Kelas:</span>
-                                    </div>
-                                    <div class="col-8">
-                                        <span class="profile-value"><?php echo htmlspecialchars($siswa_info['kelas']); ?></span>
-                                    </div>
-                                </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex flex-col sm:flex-row justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <span class="text-sm text-slate-500 mb-1 sm:mb-0">Nama Lengkap</span>
+                                <span class="font-semibold text-slate-900"><?php echo htmlspecialchars($siswa_info['nama']); ?></span>
                             </div>
-                            <div class="profile-item">
-                                <div class="row">
-                                    <div class="col-4">
-                                        <span class="profile-label">Jurusan:</span>
-                                    </div>
-                                    <div class="col-8">
-                                        <span class="profile-value"><?php echo htmlspecialchars($siswa_info['jurusan']); ?></span>
-                                    </div>
-                                </div>
+                            <div class="flex flex-col sm:flex-row justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <span class="text-sm text-slate-500 mb-1 sm:mb-0">Nomor Induk Siswa (NIS)</span>
+                                <span class="font-semibold text-slate-900"><?php echo htmlspecialchars($siswa_info['nis']); ?></span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <span class="text-sm text-slate-500 mb-1 sm:mb-0">Kelas Saat Ini</span>
+                                <span class="font-semibold text-slate-900"><?php echo htmlspecialchars($siswa_info['kelas']); ?></span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <span class="text-sm text-slate-500 mb-1 sm:mb-0">Jurusan</span>
+                                <span class="font-semibold text-slate-900"><?php echo htmlspecialchars($siswa_info['jurusan']); ?></span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Right Column: Quick Info -->
+                <div class="space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h4 class="font-bold text-slate-800 mb-4">Informasi Sekolah</h4>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex items-start gap-3">
+                                <i class="ph-fill ph-map-pin text-primary-500 text-lg mt-0.5"></i>
+                                <span class="text-slate-600">Jl. Bojong Indah Raya No.48 2, Cengkareng, Jakarta Barat</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="ph-fill ph-phone text-primary-500 text-lg mt-0.5"></i>
+                                <span class="text-slate-600">(0383) 123456</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="ph-fill ph-envelope text-primary-500 text-lg mt-0.5"></i>
+                                <span class="text-slate-600">info@sdlamaholot.sch.id</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
+                        <i class="ph-fill ph-quotes text-4xl opacity-30 mb-2"></i>
+                        <p class="font-medium italic mb-4">"Pendidikan adalah senjata paling ampuh yang bisa kamu gunakan untuk mengubah dunia."</p>
+                        <p class="text-sm opacity-80 text-right">- Nelson Mandela</p>
+                    </div>
+                </div>
+
             </div>
         </div>
-    </div>
+    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Mobile sidebar functionality
-        document.getElementById('hamburger').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
+        // Sidebar Toggle
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        let isSidebarOpen = false;
 
-        document.getElementById('close-sidebar').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.body.style.overflow = '';
-        });
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const hamburger = document.getElementById('hamburger');
-
-            if (window.innerWidth < 768 &&
-                sidebar.classList.contains('active') &&
-                !sidebar.contains(event.target) &&
-                event.target !== hamburger) {
-                sidebar.classList.remove('active');
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            if (isSidebarOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden', 'opacity-0');
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
                 document.body.style.overflow = '';
             }
-        });
+        }
+
+        menuBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Tab Switcher
+        function switchTab(tabName) {
+            const tabs = ['rapor', 'profil'];
+            
+            tabs.forEach(t => {
+                const content = document.getElementById(`content-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                
+                if (t === tabName) {
+                    content.classList.remove('hidden');
+                    btn.classList.remove('text-slate-500');
+                    btn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+                } else {
+                    content.classList.add('hidden');
+                    btn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+                    btn.classList.add('text-slate-500');
+                }
+            });
+        }
     </script>
 </body>
 </html>

@@ -16,353 +16,195 @@ $guru_info = $koneksi->query("SELECT * FROM guru WHERE user_id = $user_id")->fet
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Guru - SD Lamaholot</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#ecfdf5', 100: '#d1fae5', 500: '#10b981', 600: '#059669', 700: '#047857', 900: '#064e3b' } // Emerald
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --ntt-primary: #e74c3c;
-            --ntt-secondary: #f39c12;
-            --ntt-accent: #27ae60;
-            --card-bg: #ffffff;
-            --shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            --shadow-lg: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            padding-bottom: 1rem;
-        }
-
-        .sidebar {
-            background: var(--ntt-accent);
-            color: white;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            z-index: 1000;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-            padding-top: 3.5rem;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.85);
-            padding: 0.75rem 1.5rem;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-        }
-
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border-left: 3px solid var(--ntt-secondary);
-        }
-
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            width: 24px;
-            text-align: center;
-        }
-
-        .main-content {
-            margin-left: 0;
-            padding: 1rem;
-            transition: margin-left 0.3s ease;
-        }
-
-        .main-content.expanded {
-            margin-left: 280px;
-        }
-
-        .top-nav {
-            background: white;
-            box-shadow: var(--shadow);
-            padding: 0.75rem 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .dashboard-header {
-            margin-bottom: 1.5rem;
-            padding: 1rem 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .welcome-card {
-            background: linear-gradient(135deg, var(--ntt-accent) 0%, var(--ntt-secondary) 100%);
-            color: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .menu-card {
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            margin-bottom: 1rem;
-            border: none;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .menu-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .menu-card .card-body {
-            padding: 1.5rem;
-        }
-
-        .menu-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .hamburger {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--ntt-accent);
-            cursor: pointer;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            transition: background-color 0.2s ease;
-            margin-right: 0.5rem;
-        }
-
-        .hamburger:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        .hamburger i {
-            pointer-events: none; /* Prevent double click issues */
-        }
-
-        .mobile-only {
-            display: block;
-        }
-
-        .desktop-only {
-            display: none;
-        }
-
-        @media (min-width: 768px) {
-            .sidebar {
-                left: 0;
-            }
-
-            .main-content {
-                margin-left: 280px;
-            }
-
-            .mobile-only {
-                display: none;
-            }
-
-            .desktop-only {
-                display: block;
-            }
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
-        }
-
-        .guru-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .guru-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--ntt-primary) 0%, var(--ntt-secondary) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
-<body>
-    <!-- Mobile Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="p-3">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="text-white mb-0">SD Lamaholot</h5>
-                <button class="btn text-white d-md-none" id="close-sidebar">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-        </div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" href="dashboard.php">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="input_nilai.php">
-                    <i class="bi bi-pencil-square"></i> Input Nilai
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="rekap_nilai.php">
-                    <i class="bi bi-journal-text"></i> Rekap Nilai
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="preview_rapor.php?tahun_ajaran=<?php echo date('Y').'/'.(date('Y')+1); ?>&semester=<?php echo (date('n') > 6) ? 1 : 2; ?>">
-                    <i class="bi bi-file-earmark-text"></i> Preview Rapor
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="../../actions/logout.php">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-            </li>
-        </ul>
-    </div>
+<body class="bg-slate-50 text-slate-800">
 
-    <div class="main-content" id="main-content">
-        <!-- Top Navigation for Mobile -->
-        <nav class="top-nav d-flex d-md-none">
-            <button class="hamburger" id="hamburger">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="ms-auto">
-                <a href="../../actions/logout.php" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-box-arrow-right"></i>
-                </a>
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity opacity-0 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+        <div class="h-16 flex items-center px-6 border-b border-slate-100">
+            <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-md shadow-primary-500/30 mr-3">
+                <i class="ph ph-book-bookmark text-white text-lg"></i>
             </div>
+            <span class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">SD Lamaholot</span>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Guru</p>
+            
+            <a href="dashboard.php" class="flex items-center px-3 py-2.5 bg-primary-50 text-primary-700 rounded-xl group transition-colors">
+                <i class="ph-fill ph-squares-four text-xl mr-3"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            
+            <a href="input_nilai.php" class="flex items-center px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl group transition-colors">
+                <i class="ph ph-pencil-simple text-xl mr-3 text-slate-400 group-hover:text-primary-600 transition-colors"></i>
+                <span class="font-medium">Input Nilai</span>
+            </a>
+            
+            <a href="rekap_nilai.php" class="flex items-center px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl group transition-colors">
+                <i class="ph ph-notebook text-xl mr-3 text-slate-400 group-hover:text-primary-600 transition-colors"></i>
+                <span class="font-medium">Rekap Nilai</span>
+            </a>
         </nav>
 
-        <div class="container-fluid">
-            <div class="dashboard-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2 class="mb-1">Dashboard Guru</h2>
-                        <p class="text-muted mb-0">Sistem Manajemen Rapor Online</p>
-                    </div>
-                    <div class="d-none d-md-block">
-                        <span class="badge bg-success">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></span>
-                    </div>
+        <div class="p-4 border-t border-slate-100">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold">
+                    <?php echo strtoupper(substr($_SESSION['username'], 0, 2)); ?>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-900 truncate"><?php echo htmlspecialchars($_SESSION['username']); ?></p>
+                    <p class="text-xs text-slate-500 truncate">Guru Pengajar</p>
                 </div>
             </div>
-
-            <div class="guru-info">
-                <div class="guru-avatar">
-                    <?php echo strtoupper(substr($guru_info['nama'], 0, 1)); ?>
-                </div>
-                <div>
-                    <h3 class="mb-0"><?php echo htmlspecialchars($guru_info['nama']); ?></h3>
-                    <p class="text-muted mb-0">NIP: <?php echo htmlspecialchars($guru_info['nip']); ?></p>
-                </div>
-            </div>
-
-            <div class="welcome-card">
-                <h3 class="mb-3"><i class="bi bi-emoji-smile"></i> Selamat Datang!</h3>
-                <p class="mb-0">Halo, <strong><?php echo htmlspecialchars($guru_info['nama']); ?></strong>! Anda sedang masuk sebagai guru di sistem rapor online SD Lamaholot. Gunakan menu di bawah untuk mengelola nilai siswa.</p>
-            </div>
-
-            <div class="mb-4">
-                <h3 class="mb-3"><i class="bi bi-menu-button-wide"></i> Menu Utama</h3>
-                <div class="menu-grid">
-                    <a href="input_nilai.php" class="menu-card card text-decoration-none">
-                        <div class="card-body text-center">
-                            <div class="menu-icon text-primary">
-                                <i class="bi bi-pencil-square"></i>
-                            </div>
-                            <h5 class="card-title">Input & Kelola Nilai</h5>
-                            <p class="card-text text-muted">Input nilai siswa dan kelola data nilai</p>
-                        </div>
-                    </a>
-                    <a href="rekap_nilai.php" class="menu-card card text-decoration-none">
-                        <div class="card-body text-center">
-                            <div class="menu-icon text-success">
-                                <i class="bi bi-journal-text"></i>
-                            </div>
-                            <h5 class="card-title">Rekap Nilai</h5>
-                            <p class="card-text text-muted">Lihat dan cetak rekapitulasi nilai siswa</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
+            <a href="../../actions/logout.php" class="flex items-center justify-center w-full py-2 px-4 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                <i class="ph ph-sign-out mr-2"></i> Logout
+            </a>
         </div>
-    </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:ml-64 min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-4 lg:px-8 flex items-center justify-between">
+            <div class="flex items-center">
+                <button id="menuBtn" class="p-2 -ml-2 mr-2 text-slate-500 hover:bg-slate-100 rounded-lg lg:hidden">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+                <h1 class="text-xl font-bold text-slate-800 hidden sm:block">Dashboard Guru</h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                    <i class="ph-fill ph-calendar-blank mr-2 text-slate-400"></i>
+                    <?php echo date('d F Y'); ?>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+            
+            <!-- Welcome Banner -->
+            <div class="relative overflow-hidden bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl p-8 text-white shadow-xl shadow-primary-900/10">
+                <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                    <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl font-bold border-2 border-white/30">
+                        <?php echo strtoupper(substr($guru_info['nama'], 0, 1)); ?>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <h2 class="text-3xl font-bold mb-2">Halo, <?php echo htmlspecialchars($guru_info['nama']); ?>! 👋</h2>
+                        <p class="text-primary-100 max-w-xl">Selamat datang di panel guru. Kelola nilai siswa, rekapitulasi, dan laporan hasil belajar dengan mudah di sini.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Grid -->
+            <div>
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                    <i class="ph-fill ph-grid-four text-primary-500 mr-2"></i> Menu Akses Cepat
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Input Nilai -->
+                    <a href="input_nilai.php" class="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary-500 transition-all duration-300 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                            <i class="ph-fill ph-pencil-simple text-8xl text-primary-600"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-primary-50 text-primary-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                                <i class="ph-fill ph-pencil-simple text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-primary-700">Input Nilai</h4>
+                            <p class="text-slate-500 text-sm">Masukkan nilai harian, UTS, dan UAS siswa secara terstruktur.</p>
+                        </div>
+                    </a>
+
+                    <!-- Rekap Nilai -->
+                    <a href="rekap_nilai.php" class="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary-500 transition-all duration-300 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                            <i class="ph-fill ph-notebook text-8xl text-blue-600"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <i class="ph-fill ph-notebook text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-700">Rekap Nilai</h4>
+                            <p class="text-slate-500 text-sm">Lihat rekapitulasi nilai seluruh siswa dalam satu tampilan tabel.</p>
+                        </div>
+                    </a>
+
+                    <!-- Preview Rapor -->
+                    <a href="preview_rapor.php?tahun_ajaran=<?php echo date('Y').'/'.(date('Y')+1); ?>&semester=<?php echo (date('n') > 6) ? 1 : 2; ?>" class="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary-500 transition-all duration-300 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                            <i class="ph-fill ph-file-text text-8xl text-purple-600"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                                <i class="ph-fill ph-file-text text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-purple-700">Preview Rapor</h4>
+                            <p class="text-slate-500 text-sm">Pratinjau hasil belajar siswa sebelum dicetak final.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
 
     <script>
-        // Mobile sidebar functionality
-        document.getElementById('hamburger').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
+        // Mobile Sidebar Toggle
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        let isSidebarOpen = false;
 
-        document.getElementById('close-sidebar').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.body.style.overflow = '';
-        });
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const hamburger = document.getElementById('hamburger');
-
-            if (window.innerWidth < 768 &&
-                sidebar.classList.contains('active') &&
-                !sidebar.contains(event.target) &&
-                event.target !== hamburger) {
-                sidebar.classList.remove('active');
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            if (isSidebarOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden', 'opacity-0');
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
                 document.body.style.overflow = '';
             }
-        });
+        }
 
-        // Add hover effect to menu cards
-        const menuCards = document.querySelectorAll('.menu-card');
-        menuCards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
-            });
-
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
+        menuBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
     </script>
 </body>
 </html>
